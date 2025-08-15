@@ -1,3 +1,5 @@
+<img src="seisviz_logo.png" alt="Seismic Visualization" width="300">
+
 # seisviz
 
 A lightweight Python library for visualizing seismic data.
@@ -7,7 +9,7 @@ Load `.sgy`, `.segy`, or `.npy` files, visualize slices, highlight features, and
 
 **Author**:  [Promise Ekeh](https://github.com/Promisekeh) 
 
-**Co-author**: Perkins Offi
+**Co-author**: [Perkins Offi](https://github.com/Perkins-offi)
 
 
 

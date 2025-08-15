@@ -1,3 +1,5 @@
+<img src="seisviz_logo.png" alt="Seismic Visualization" width="300">
+
 # seisviz
 
 A lightweight Python library for visualizing seismic data.

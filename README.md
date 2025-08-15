@@ -7,7 +7,7 @@ Load `.sgy`, `.segy`, or `.npy` files, visualize slices, highlight features, and
 
 **Author**:  [Promise Ekeh](https://github.com/Promisekeh) 
 
-**Co-author**: Perkins Offi
+**Co-author**: [Perkins Offi](https://github.com/Perkins-offi)
 
 
 

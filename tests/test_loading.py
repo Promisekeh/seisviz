@@ -71,6 +71,45 @@ class TestShapeValidation:
             load_seismic_data(str(path))
 
 
+class TestAmplitudeValidation:
+    def test_rejects_non_numeric_dtype(self, tmp_path):
+        path = tmp_path / "text.npy"
+        np.save(path, np.full((3, 3, 3), "a", dtype='<U1'))
+        with pytest.raises(ValueError, match="numeric"):
+            load_seismic_data(str(path))
+
+    def test_warns_on_nan_without_failing(self, cube, tmp_path):
+        volume = cube.copy()
+        volume[0, 0, 0] = np.nan
+        path = tmp_path / "with_nan.npy"
+        np.save(path, volume)
+
+        with pytest.warns(UserWarning, match="1 NaN/Inf"):
+            loaded = load_seismic_data(str(path))
+        assert np.isnan(loaded[0, 0, 0])  # not silently dropped or replaced
+
+    def test_warns_on_inf(self, cube, tmp_path):
+        volume = cube.copy()
+        volume[0, 0, 0] = np.inf
+        path = tmp_path / "with_inf.npy"
+        np.save(path, volume)
+
+        with pytest.warns(UserWarning, match="NaN/Inf"):
+            load_seismic_data(str(path))
+
+    def test_integer_volumes_skip_the_finite_check(self, tmp_path):
+        """np.isfinite has no meaning for integer dtypes; must not raise."""
+        path = tmp_path / "ints.npy"
+        np.save(path, np.zeros((3, 3, 3), dtype=np.int32))
+        load_seismic_data(str(path))  # no warning, no error
+
+    def test_normalize_volume_warns_on_non_finite(self):
+        volume = np.ones((3, 3, 3))
+        volume[0, 0, 0] = np.inf
+        with pytest.warns(UserWarning, match="NaN/Inf"):
+            normalize_volume(volume)
+
+
 class TestNormalization:
     def test_scales_into_minus_one_to_one(self, npy_path):
         volume = load_seismic_data(str(npy_path), normalize=True)

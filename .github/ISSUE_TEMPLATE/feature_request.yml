@@ -1,0 +1,27 @@
+name: Feature request
+description: Suggest something seisviz should do
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: The workflow or analysis this would support, not just the API shape.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed API (optional)
+      render: python
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: existing
+    attributes:
+      label: Related to an existing roadmap item?
+      description: Check ROADMAP.md first — this may already be tracked.
+      options:
+        - label: I checked ROADMAP.md and this isn't already listed

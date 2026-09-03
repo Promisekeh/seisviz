@@ -6,6 +6,11 @@
 
 # seisviz
 
+[![tests](https://github.com/Promisekeh/seisviz/actions/workflows/test.yml/badge.svg)](https://github.com/Promisekeh/seisviz/actions/workflows/test.yml)
+[![PyPI version](https://img.shields.io/pypi/v/seisviz.svg)](https://pypi.org/project/seisviz/)
+[![Python versions](https://img.shields.io/pypi/pyversions/seisviz.svg)](https://pypi.org/project/seisviz/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 A lightweight Python library for visualizing seismic data.
 
 `seisviz` helps geoscientists, researchers, and students explore seismic volumes using simple, intuitive Python functions.  
@@ -177,24 +182,19 @@ fig, ax = sv.plot_multiple_seismic_slices_3d(
 
 ---
 
-## Potential Features / Modules:
+## Roadmap
 
-
-| Feature           | Description                                                           |
-|---------------------------|-----------------------------------------------------------------------|
-| ML Integration          | Seamless overlay of ML-predicted labels and attributes                |
-| Fault Visualization     | Highlight structural features like faults and horizons                |
-| Interactive Viewer     | Scroll, pan, and slice through volumes using `ipywidgets` or `Plotly` |
-| Horizon & Mask Overlays | Display stratigraphic boundaries and region-based annotations         |
-| Volume Metadata         | Inline/xline/depth range auto-detection                               |
-| Volume animation  | Scroll through slices          |
-| Synthetic Data Support  | Load and test synthetic cubes for research or ML prototyping          |
+See [ROADMAP.md](ROADMAP.md) for what's planned — an interactive
+`ipywidgets` viewer and memory-mapped loading for large surveys are the
+current top picks.
 
 ---
 ## Contributing
 
-Pull requests and feedback are welcome!  
-Open an issue, fork the repo, and contribute — especially if you want to help add interactivity, masks, or ML layers.
+Pull requests and feedback are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md)
+for dev setup and testing, and [ROADMAP.md](ROADMAP.md) for what's planned —
+especially if you want to help with interactivity, overlays, or ML-facing
+features.
 
 ## Axis Assumption
 
@@ -239,26 +239,11 @@ don't know it:
 
 ## Changelog
 
-### 0.2.0 — breaking
-
-- **Volumes are now ordered `(inline, xline, depth)`**, matching `segyio` and
-  most SEG-Y readers, so `load_seismic_data()` no longer transposes SEG-Y
-  files on load. A cube in the old `seisviz` order (`xline, inline, depth`)
-  can be upgraded with `reorder_volume(volume)` — no arguments needed.
-  `load_seismic_data()` also takes `current_order` to reorder a `.npy` file
-  as it loads.
-- **Plotting functions return `(fig, ax)` and no longer call `plt.show()`.**
-  Pass `show=True` for the old behaviour.
-- Facies labels are drawn with a discrete norm, so each class keeps its own
-  colour in every slice. Colorbars are named from `label_dict["class"]`.
-- Diverging colormaps are centred on zero amplitude by default.
-- Depth-slice axis labels corrected (the vertical axis is Inline, not Xline).
-- Both 3D views now share one axis assignment (X=Inline, Y=Xline, Z=Depth)
-  and one colour scale, and are drawn true to the survey's real proportions
-  (`ax.set_box_aspect`) instead of a distorted equal-sided box, so a slice
-  plane no longer looks foreshortened.
-- `segyio` moved to the optional `[segy]` extra; `save_seismic_slice` exported.
-- Requires Python 3.9+ and matplotlib 3.5+.
+0.2.0 is a breaking release: the axis convention flipped to
+`(inline, xline, depth)`, plotting functions return `(fig, ax)` instead of
+calling `plt.show()`, and several silent rendering bugs (label colours,
+zero-centred amplitude scaling, 3D box proportions) are fixed.
+See [CHANGELOG.md](CHANGELOG.md) for the full list.
 
 ---
 

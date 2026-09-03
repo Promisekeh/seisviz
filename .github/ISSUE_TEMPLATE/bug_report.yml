@@ -1,0 +1,51 @@
+name: Bug report
+description: Something in seisviz produced wrong or unexpected output
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A screenshot of the figure is extremely helpful for rendering issues.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: The exact seisviz call(s) that produced this, and the shape of your volume.
+      render: python
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: false
+
+  - type: textarea
+    id: traceback
+    attributes:
+      label: Traceback (if any)
+      render: text
+    validations:
+      required: false
+
+  - type: input
+    id: seisviz-version
+    attributes:
+      label: seisviz version
+      placeholder: python -c "import seisviz; print(seisviz.__version__)"
+    validations:
+      required: true
+
+  - type: input
+    id: versions
+    attributes:
+      label: Python / matplotlib / numpy versions
+      placeholder: "3.11 / 3.9.0 / 1.26.0"
+    validations:
+      required: true

@@ -105,6 +105,36 @@ def load_segy_auto_3d(path):
     return volume
 
 
+def _validate_amplitudes(seismic_data, source):
+    """
+    Check that loaded data is numeric and flag non-finite values.
+
+    A non-numeric dtype (e.g. an object array from a malformed .npy) fails
+    with a confusing error deep inside a plotting call otherwise. NaN/Inf
+    values don't raise anywhere downstream either - they silently propagate
+    through np.min/np.max/percentile, so a single bad trace can blank out or
+    invalidate colour scaling for an entire volume without any warning.
+    """
+    if not np.issubdtype(seismic_data.dtype, np.number):
+        raise ValueError(
+            f"{source} must contain numeric data; got dtype "
+            f"{seismic_data.dtype!r}."
+        )
+
+    if not np.issubdtype(seismic_data.dtype, np.floating):
+        return  # non-finite values are a floating-point-only concern
+
+    non_finite = ~np.isfinite(seismic_data)
+    n_bad = int(non_finite.sum())
+    if n_bad:
+        warnings.warn(
+            f"{source} contains {n_bad} NaN/Inf value(s) "
+            f"({n_bad / seismic_data.size:.4%} of the volume). These will "
+            f"propagate through amplitude scaling and colour limits.",
+            stacklevel=3,
+        )
+
+
 def normalize_volume(volume, method="minmax"):
     """
     Scale a volume into [-1, 1].
@@ -119,6 +149,7 @@ def normalize_volume(volume, method="minmax"):
     if method != "minmax":
         raise ValueError(f"Unsupported normalization method: {method}")
 
+    _validate_amplitudes(volume, "volume")
     v_min, v_max = np.min(volume), np.max(volume)
     if v_max - v_min == 0:
         warnings.warn(
@@ -199,6 +230,8 @@ def load_seismic_data(path, normalize=False, current_order=None):
             f"Expected a 3D volume (inlines, xlines, depth), got a "
             f"{seismic_data.ndim}D array with shape {seismic_data.shape}."
         )
+
+    _validate_amplitudes(seismic_data, path)
 
     if normalize:
         seismic_data = normalize_volume(seismic_data, method="minmax")

@@ -100,10 +100,22 @@ In Jupyter the figure still renders automatically; in a script, call
 | `get_segy_headers()`                | Read textual, binary, and trace headers from SEG-Y    |
 | `reorder_volume()`                  | Transpose a cube into the `(inline, xline, depth)` order |
 | `get_volume_range_info()`           | Report the valid index range on each axis             |
+| `get_label_info()`                  | See which classes are actually present in a label volume |
 
 ---
 
 ## Labelling Facies
+
+Not sure what classes are actually in your label volume yet? Check before
+building a `label_dict`, rather than guessing:
+
+```python
+sv.get_label_info(labels)
+# {'classes': [0, 1, 3, 5],
+#  'counts': {0: 30000, 1: 30000, 3: 30000, 5: 30000},
+#  'proportions': {0: 0.25, 1: 0.25, 3: 0.25, 5: 0.25},
+#  'names': {}, 'missing_from_label_dict': None}
+```
 
 Pass a `label` cube the same shape as your volume, plus a `label_dict`
 describing the classes:
@@ -131,7 +143,8 @@ fig, (ax_seis, ax_lab) = sv.plot_2D_seismic(
 
 Each class keeps the same colour in every slice, whether or not it appears in
 that slice. Classes missing from `label_dict["color"]` are drawn in grey and
-reported with a warning.
+reported with a warning — or check up front with
+`get_label_info(labels, label_dict)["missing_from_label_dict"]`.
 
 ---
 

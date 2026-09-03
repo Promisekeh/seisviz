@@ -67,3 +67,48 @@ def get_volume_range_info(volume):
         "depth_sample_range": (0, n_depth - 1),
         "shape": volume.shape,
     }
+
+
+def get_label_info(labels, label_dict=None):
+    """
+    Summarize the classes present in a label volume.
+
+    Useful for building a `label_dict` (see `plot_2D_seismic`) without
+    guessing which values are actually present, or for checking an existing
+    `label_dict` against real data before plotting.
+
+    Args:
+        labels (np.ndarray): Label volume.
+        label_dict (dict, optional): {'class': {...}, 'color': {...}} to
+            cross-reference against the data.
+
+    Returns:
+        dict:
+            "classes": sorted list of unique values present in `labels`.
+            "counts": {class: voxel count}.
+            "proportions": {class: fraction of the volume}.
+            "names": {class: name}, from `label_dict['class']`, for classes
+                present that it names. Empty if `label_dict` is None.
+            "missing_from_label_dict": classes present but absent from
+                `label_dict['color']` (these render in grey - see
+                `plot_2D_seismic`). None if `label_dict` is None.
+    """
+    values, counts = np.unique(labels, return_counts=True)
+    classes = [v.item() for v in values]
+    total = labels.size
+
+    info = {
+        "classes": classes,
+        "counts": {c: int(n) for c, n in zip(classes, counts)},
+        "proportions": {c: float(n) / total for c, n in zip(classes, counts)},
+        "names": {},
+        "missing_from_label_dict": None,
+    }
+
+    if label_dict is not None:
+        names = label_dict.get('class') or {}
+        colors = label_dict.get('color') or {}
+        info["names"] = {c: names[c] for c in classes if c in names}
+        info["missing_from_label_dict"] = sorted(set(classes) - set(colors))
+
+    return info

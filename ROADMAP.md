@@ -66,3 +66,6 @@ not duplicated above:
 - **ML label overlay** — `plot_2D_seismic(..., label=..., label_dict=...)`,
   including per-class colour consistency across slices and `mask_labels` to
   hide a background class.
+- **Inspecting label classes before plotting** — `get_label_info()` reports
+  the classes actually present in a label volume, their counts/proportions,
+  and which ones a given `label_dict` is missing.

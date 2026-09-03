@@ -2,6 +2,14 @@
 
 All notable changes to `seisviz` are documented here.
 
+## Unreleased
+
+- Added `get_label_info(labels, label_dict=None)`: reports the unique
+  classes present in a label volume, their voxel counts/proportions, and
+  (when a `label_dict` is given) which classes it names and which are
+  missing from its `color` map. Lets you build or check a `label_dict`
+  against real data instead of guessing what's in it.
+
 ## 0.2.0 — breaking
 
 - **Volumes are now ordered `(inline, xline, depth)`**, matching `segyio` and

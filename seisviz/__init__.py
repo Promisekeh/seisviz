@@ -16,7 +16,7 @@ from .seismic_volume_plot import (
     plot_multiple_seismic_slices_3d,
 )
 from .save_seismic_slice import save_seismic_slice
-from .utils import reorder_volume, get_volume_range_info
+from .utils import reorder_volume, get_volume_range_info, get_label_info
 
 __all__ = [
     "load_seismic_data",
@@ -30,6 +30,7 @@ __all__ = [
     "save_seismic_slice",
     "reorder_volume",
     "get_volume_range_info",
+    "get_label_info",
 ]
 
 __version__ = "0.2.0"

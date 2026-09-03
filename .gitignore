@@ -1,0 +1,35 @@
+# Byte-compiled / caches
+__pycache__/
+*.py[cod]
+*.so
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Environments
+.venv/
+venv/
+env/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Seismic data - keep surveys out of the repo
+data/
+*.sgy
+*.segy
+*.npy
+!tests/**/*.npy
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store

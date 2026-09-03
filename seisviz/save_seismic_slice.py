@@ -1,31 +1,52 @@
-def save_seismic_slice(seismic_volume, line_number, line_type='inline', output_path='slice.png', cmap='seismic'):
+import os
+
+import matplotlib.pyplot as plt
+
+from .seismic_slice_plot import plot_2D_seismic
+
+
+def save_seismic_slice(seismic_volume, line_number, line_type='inline',
+                       output_path='slice.png', cmap='seismic', dpi=300,
+                       axis=False, **kwargs):
     """
-    Save a 2D seismic slice as an image file.
+    Render a 2D seismic slice and write it to an image file.
+
+    Shares the rendering path with plot_2D_seismic, so the saved image uses the
+    same zero-centred amplitude limits and axis labels as the on-screen figure.
+    Any missing parent directories in `output_path` are created.
 
     Args:
-        seismic_volume (np.ndarray): 3D seismic cube
-        line_number (int): Index of the slice to save
-        line_type (str): 'inline', 'xline', or 'depth'
-        output_path (str): Path to save the image (e.g., 'output/inline_45.png')
-        cmap (str): Matplotlib colormap to use
+        seismic_volume (np.ndarray): 3D cube (inlines, xlines, depth).
+        line_number (int): Index of the slice to save.
+        line_type (str): 'inline', 'xline', or 'depth'.
+        output_path (str): Where to write the image, e.g. 'output/inline_45.png'.
+        cmap (str): Matplotlib colormap to use.
+        dpi (int): Output resolution.
+        axis (bool): Draw axes, labels and colorbar. False writes the bare image.
+        **kwargs: Forwarded to plot_2D_seismic (label, label_dict, vmin, ...).
+
+    Returns:
+        str: The path written.
     """
-    import matplotlib.pyplot as plt
-    slice_number = int(line_number)
+    fig, ax = plot_2D_seismic(
+        seismic_volume,
+        line_number,
+        line_type=line_type,
+        cmap=cmap,
+        show=False,
+        **kwargs,
+    )
 
-    if line_type == 'inline':
-        data = seismic_volume[:, slice_number, :].T
-    elif line_type == 'xline':
-        data = seismic_volume[slice_number, :, :].T
-    elif line_type == 'depth':
-        data = seismic_volume[:, :, slice_number]
-    else:
-        raise ValueError("line_type must be one of: 'inline', 'xline', or 'depth'")
+    if not axis:
+        for a in fig.axes:
+            a.set_axis_off()
+        ax.set_title("")
 
-    plt.figure(figsize=(10, 6))
-    plt.imshow(data, cmap=cmap)
-    plt.title(f"{line_type.capitalize()} Slice {line_number}")
-    plt.axis('off')
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=300)
-    plt.close()
-    print(f"Saved {line_type} slice {line_number} to {output_path}")
+    directory = os.path.dirname(output_path)
+    if directory:
+        os.makedirs(directory, exist_ok=True)
+
+    fig.savefig(output_path, dpi=dpi, bbox_inches='tight')
+    plt.close(fig)
+
+    return output_path

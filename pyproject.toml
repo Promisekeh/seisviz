@@ -1,3 +1,57 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "seisviz"
+description = "A lightweight Python library for visualizing 3D seismic data"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+authors = [
+    { name = "Promise Ekeh", email = "promisekeh1@gmail.com" },
+]
+keywords = ["seismic", "segy", "geophysics", "visualization", "geoscience"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    # matplotlib.colormaps[...] is the registry API added in 3.5
+    "numpy>=1.21",
+    "matplotlib>=3.5",
+]
+# Single source of truth: seisviz/__init__.py __version__
+dynamic = ["version"]
+
+[project.optional-dependencies]
+# segyio ships compiled wheels that lag new Python releases, so reading SEG-Y
+# is opt-in and the package stays installable for .npy-only users.
+segy = ["segyio>=1.9"]
+dev = [
+    "pytest>=7",
+    "black",
+    "segyio>=1.9",
+]
+
+[project.urls]
+Homepage = "https://github.com/Promisekeh/seisviz"
+Repository = "https://github.com/Promisekeh/seisviz"
+Issues = "https://github.com/Promisekeh/seisviz/issues"
+
+[tool.setuptools]
+packages = ["seisviz"]
+
+[tool.setuptools.dynamic]
+version = { attr = "seisviz.__version__" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

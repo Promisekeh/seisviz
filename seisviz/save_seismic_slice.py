@@ -18,7 +18,8 @@ def save_seismic_slice(seismic_volume, line_number, line_type='inline',
     Args:
         seismic_volume (np.ndarray): 3D cube (inlines, xlines, depth).
         line_number (int): Index of the slice to save.
-        line_type (str): 'inline', 'xline', or 'depth'.
+        line_type (str): 'inline', 'xline', 'depth', or 'time' (an alias for
+            'depth' - see `plot_2D_seismic`).
         output_path (str): Where to write the image, e.g. 'output/inline_45.png'.
         cmap (str): Matplotlib colormap to use.
         dpi (int): Output resolution.

@@ -8,7 +8,9 @@ introduced anywhere fails loudly instead of producing a plausible picture.
 import numpy as np
 import pytest
 
-from seisviz import reorder_volume, get_volume_range_info
+from seisviz import (
+    reorder_volume, get_volume_range_info, plot_2D_seismic, show_random_line,
+)
 from seisviz.seismic_slice_plot import get_line_type
 from seisviz.seismic_volume_plot import (
     plot_seismic_3d_slices,
@@ -58,6 +60,86 @@ def test_slices_come_from_the_named_axis(cube):
 def test_get_line_type_rejects_unknown_type(cube):
     with pytest.raises(ValueError, match="Invalid line_type"):
         get_line_type('timeslice', 0, cube)
+
+
+@pytest.mark.parametrize(
+    "domain, expected_label",
+    [
+        (None, 'Depth'),      # unchanged default: no geometry supplied
+        ('time', 'Time'),
+        ('depth', 'Depth'),
+        ('nonsense', 'Depth'),  # falls back rather than raising mid-plot
+    ],
+)
+def test_vertical_axis_label_follows_domain(cube, domain, expected_label):
+    """
+    domain only affects inline/xline slices' y-axis label text - it never
+    changes what data is plotted, since there's no reliable way to detect or
+    convert domain from the file itself (see ROADMAP.md).
+    """
+    for line_type in ('inline', 'xline'):
+        _, ylabel, _ = get_line_type(line_type, 0, cube, domain=domain)
+        assert ylabel == expected_label
+
+    # depth slices are unaffected either way - domain describes the axis
+    # being sliced away, not the map-view result
+    _, ylabel, _ = get_line_type('depth', 0, cube, domain=domain)
+    assert ylabel == 'Inline'
+
+
+def test_plot_2D_seismic_reads_domain_from_geometry(cube):
+    _, ax = plot_2D_seismic(cube, 0, line_type='inline')
+    assert ax.get_ylabel() == 'Depth'  # unchanged default with no geometry
+
+    _, ax_time = plot_2D_seismic(
+        cube, 0, line_type='inline', geometry={'domain': 'time'}
+    )
+    assert ax_time.get_ylabel() == 'Time'
+
+
+class TestTimeDepthAlias:
+    """'time' is accepted wherever 'depth' is, and slices identically -
+    they differ only in which word ends up in a plot title."""
+
+    def test_time_and_depth_slice_identically(self, cube):
+        by_depth, ylabel_d, xlabel_d = get_line_type('depth', 3, cube)
+        by_time, ylabel_t, xlabel_t = get_line_type('time', 3, cube)
+        assert np.array_equal(by_depth, by_time)
+        assert (ylabel_d, xlabel_d) == (ylabel_t, xlabel_t)
+
+    def test_check_bounds_accepts_the_alias(self, cube):
+        # depth axis has N_DEPTH samples; an out-of-range index must still
+        # raise under the 'time' spelling exactly as it does under 'depth'.
+        # The message names the canonical axis ('depth'), not the caller's
+        # spelling - bounds errors describe the axis, not the vocabulary.
+        with pytest.raises(IndexError, match="depth index"):
+            plot_2D_seismic(cube, N_DEPTH, line_type='time')
+
+    def test_show_random_line_accepts_the_alias(self, cube, capsys):
+        fig, ax = show_random_line(cube, line_type='time', seed=1)
+        assert isinstance(ax, type(plot_2D_seismic(cube, 0)[1]))
+        assert "random time slice" in capsys.readouterr().out
+
+    @pytest.mark.parametrize(
+        "line_type, domain, expected_title_word",
+        [
+            ('depth', None, 'depth'),   # unchanged default
+            ('time', None, 'time'),     # alias alone, no geometry: honored
+            ('depth', 'time', 'time'),  # geometry overrides the literal typed
+            ('time', 'depth', 'depth'), # geometry overrides the alias too
+            ('inline', 'time', 'inline'),  # domain never touches inline/xline
+        ],
+    )
+    def test_title_word_follows_domain_over_the_literal_spelling(
+        self, cube, line_type, domain, expected_title_word
+    ):
+        geometry = {'domain': domain} if domain else None
+        _, ax = plot_2D_seismic(cube, 0, line_type=line_type, geometry=geometry)
+        assert ax.get_title() == f'Seismic - {expected_title_word}: 0'
+
+    def test_rejects_unknown_line_type_mentions_time(self, cube):
+        with pytest.raises(ValueError, match="'depth', or 'time'"):
+            plot_2D_seismic(cube, 0, line_type='timeslice')
 
 
 def test_range_info_matches_the_convention(cube):

@@ -39,39 +39,27 @@ Grows what the library can actually show or compute.
   fills whatever box matplotlib gives it — no relationship to real-world
   units, and not even reproducible across `figsize` choices, so every plot
   today has some unintentional exaggeration or compression nobody chose.
-  Design sketched out (2026-09-03), not yet built:
-  - `sv.get_segy_geometry(path)` → `{'dt', 'dx_inline', 'dx_xline', 'units',
-    'domain'}`. `dt` from segyio's parsed sample positions
-    (`f.samples[1] - f.samples[0]`). `dx_inline`/`dx_xline` from CDP X/Y
-    trace-header coordinates (with the SEG-Y coordinate scalar applied),
-    averaged over several adjacent trace pairs rather than just the first
-    two. Verify segyio's exact field names for the coordinate scalar against
-    its source before implementing - getting that scaling wrong gives a
-    confidently wrong number, which is worse than today's honest `'auto'`.
-    Warn/raise on missing coordinates or inconsistent spacing rather than
-    guessing.
-  - **No auto-detection of time vs. depth domain** - confirmed against
-    segyio's own trace/binary header field definitions (which mirror the
-    SEG-Y spec byte-for-byte): no such field exists. `MeasurementSystem`
-    only covers X/Y coordinate units, not the vertical axis, and free-text
-    EBCDIC header hints aren't safely machine-parseable. Every interpretation
-    package asks the user to declare domain for this exact reason - so does
-    this: `load_seismic_data(path, return_geometry=True, domain='time')`.
-    Default `'time'` (the common case for raw SEG-Y); declared once at load
-    time rather than repeated on every plot call. `domain` rides along in
-    `geometry` purely for axis labeling ("Time (ms)" vs "Depth (m)") - never
-    for auto time-to-depth conversion, which would need a velocity model,
-    out of scope here.
-  - `load_seismic_data(path, return_geometry=True)` returns
-    `(volume, geometry)` instead of a bare array - opt-in, backward
-    compatible.
+  The `domain`/`geometry` groundwork shipped in 0.2.x
+  (`load_seismic_data(domain='time', return_geometry=True)` →
+  `plot_2D_seismic(geometry=geometry)`, currently used only to label the
+  vertical axis "Time" vs "Depth"). What's still open, to actually compute a
+  true aspect ratio from real units:
+  - `sv.get_segy_geometry(path)` → adds `dt`, `dx_inline`, `dx_xline`,
+    `units` to the same `geometry` dict. `dt` from segyio's parsed sample
+    positions (`f.samples[1] - f.samples[0]`). `dx_inline`/`dx_xline` from
+    CDP X/Y trace-header coordinates (with the SEG-Y coordinate scalar
+    applied), averaged over several adjacent trace pairs rather than just
+    the first two. Verify segyio's exact field names for the coordinate
+    scalar against its source before implementing - getting that scaling
+    wrong gives a confidently wrong number, which is worse than today's
+    honest `'auto'`. Warn/raise on missing coordinates or inconsistent
+    spacing rather than guessing.
   - `plot_2D_seismic(..., geometry=geometry, vertical_exaggeration=1.0)`
     picks `dx_inline` vs `dx_xline` internally based on `line_type`, so the
     caller can't accidentally feed it the wrong one (inline and crossline
-    bin spacing are usually different, e.g. a 25m x 12.5m survey), and reads
-    `geometry['domain']` for the y-axis label. Computed
-    aspect = `vertical_exaggeration * dt / dx`. Raw `dx=`/`dt=`/`domain=`
-    stay available underneath for `.npy` users with no header to derive from.
+    bin spacing are usually different, e.g. a 25m x 12.5m survey). Computed
+    aspect = `vertical_exaggeration * dt / dx`. Raw `dx=`/`dt=` stays
+    available underneath for `.npy` users with no header to derive from.
   - Scoped to inline/xline slices for now, where "vertical exaggeration" is
     the actual established term. Map-view (`line_type='depth'`) distortion
     from unequal inline/xline spacing is a related but separate concern, not

@@ -250,6 +250,29 @@ don't know it:
 
 ---
 
+## Time vs. Depth Domain
+
+The vertical axis on an inline/xline slice is labeled "Depth" by default,
+but your data might actually be in **time** (milliseconds, two-way travel
+time) — the common case for raw SEG-Y. Declare it once at load time:
+
+```python
+volume, geometry = sv.load_seismic_data("survey.sgy", domain="time",  # the default
+                                        return_geometry=True)
+fig, ax = sv.plot_2D_seismic(volume, 100, line_type="inline", geometry=geometry)
+# y-axis now reads "Time" instead of the generic "Depth"
+```
+
+**seisviz never infers this from the file** — no SEG-Y header reliably
+records it (verified against `segyio`'s own binary/trace header field
+definitions; the closest field, `MeasurementSystem`, covers X/Y coordinate
+units, not the vertical axis). Every interpretation package asks the user to
+declare domain for the same reason. `domain` only changes axis labeling —
+it never triggers a time-to-depth conversion, which would need a velocity
+model `seisviz` doesn't have.
+
+---
+
 ## Changelog
 
 0.2.0 is a breaking release: the axis convention flipped to

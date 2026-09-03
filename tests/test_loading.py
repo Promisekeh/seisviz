@@ -56,6 +56,29 @@ class TestCurrentOrder:
         assert np.array_equal(load_seismic_data(str(npy_path)), cube)
 
 
+class TestDomain:
+    def test_defaults_to_time_without_geometry_requested(self, npy_path, cube):
+        """Default behaviour is unchanged: a bare array, no geometry."""
+        result = load_seismic_data(str(npy_path))
+        assert isinstance(result, np.ndarray)
+        assert np.array_equal(result, cube)
+
+    def test_return_geometry_yields_a_tuple(self, npy_path):
+        volume, geometry = load_seismic_data(str(npy_path), return_geometry=True)
+        assert isinstance(volume, np.ndarray)
+        assert geometry == {'domain': 'time'}
+
+    def test_declared_domain_is_carried_through(self, npy_path):
+        _, geometry = load_seismic_data(
+            str(npy_path), domain='depth', return_geometry=True
+        )
+        assert geometry == {'domain': 'depth'}
+
+    def test_rejects_unknown_domain(self, npy_path):
+        with pytest.raises(ValueError, match="domain must be 'time' or 'depth'"):
+            load_seismic_data(str(npy_path), domain='frequency')
+
+
 class TestShapeValidation:
     def test_rejects_2d_arrays(self, tmp_path):
         """A 2D .npy used to load fine and fail later inside a plotting call."""

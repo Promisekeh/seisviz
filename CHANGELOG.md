@@ -9,6 +9,22 @@ All notable changes to `seisviz` are documented here.
   (when a `label_dict` is given) which classes it names and which are
   missing from its `color` map. Lets you build or check a `label_dict`
   against real data instead of guessing what's in it.
+- `load_seismic_data()` takes `domain='time'|'depth'` (default `'time'`) and
+  `return_geometry=True` to get back `(volume, geometry)` instead of a bare
+  array. `plot_2D_seismic(..., geometry=geometry)` reads `geometry['domain']`
+  to label the vertical axis ("Time" vs "Depth") on inline/xline slices
+  instead of the generic "Depth". Domain is never inferred from the file —
+  no SEG-Y header reliably records it — and never triggers a time-to-depth
+  conversion. `geometry` is the same object the planned vertical-exaggeration
+  work (see ROADMAP.md) will add sample interval/trace spacing to.
+- `line_type='time'` is now accepted as an alias for `'depth'` on
+  `plot_2D_seismic`, `save_seismic_slice`, and `show_random_line` — both
+  slice identically (fixing the vertical axis at an index); which word
+  shows up in a plot title follows `geometry['domain']` when given,
+  regardless of which of the two spellings was typed. A map-view
+  (`line_type='depth'`/`'time'`) slice's own axis labels stay Inline/Xline
+  either way, since domain describes the axis being sliced away, not the
+  map-view result.
 
 ## 0.2.0 — breaking
 

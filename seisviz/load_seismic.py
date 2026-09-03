@@ -161,7 +161,11 @@ def normalize_volume(volume, method="minmax"):
     return (2 * ((volume - v_min) / (v_max - v_min)) - 1).astype(np.float32)
 
 
-def load_seismic_data(path, normalize=False, current_order=None):
+_DOMAINS = ('time', 'depth')
+
+
+def load_seismic_data(path, normalize=False, current_order=None,
+                      domain='time', return_geometry=False):
     """
     Load a seismic volume from a .npy or .sgy/.segy file.
 
@@ -177,14 +181,30 @@ def load_seismic_data(path, normalize=False, current_order=None):
             given, the volume is transposed into 'ixd' after loading. There
             is no way to detect this from the array itself; SEG-Y files
             don't need it; their axis order is always resolved by the loader.
+        domain (str): 'time' or 'depth' - what the vertical/sample axis
+            represents. Used only for plot axis labeling (see `geometry` in
+            `plot_2D_seismic`); never inferred from the file, since no SEG-Y
+            header reliably records it. Defaults to 'time', the common case
+            for raw SEG-Y.
+        return_geometry (bool): If True, return (volume, geometry) instead
+            of a bare array. `geometry` currently carries just `domain`;
+            more fields (sample interval, trace spacing) are planned - see
+            ROADMAP.md.
 
     Returns:
-        np.ndarray: 3D seismic volume with shape (inlines, xlines, depth).
+        np.ndarray: 3D seismic volume with shape (inlines, xlines, depth),
+        if `return_geometry` is False.
+        tuple[np.ndarray, dict]: (volume, geometry) if `return_geometry` is
+        True.
 
     Raises:
-        ValueError: If the extension is unsupported or the data is not 3D.
+        ValueError: If the extension is unsupported, the data is not 3D, or
+            `domain` isn't 'time' or 'depth'.
         ImportError: If a SEG-Y file is given without segyio installed.
     """
+    if domain not in _DOMAINS:
+        raise ValueError(f"domain must be 'time' or 'depth'; got {domain!r}.")
+
     ext = _extension(path)
 
     if ext == '.npy':
@@ -236,6 +256,8 @@ def load_seismic_data(path, normalize=False, current_order=None):
     if normalize:
         seismic_data = normalize_volume(seismic_data, method="minmax")
 
+    if return_geometry:
+        return seismic_data, {'domain': domain}
     return seismic_data
 
 
